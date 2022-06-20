@@ -16,4 +16,4 @@ The tag conventions are as follows:
 
 Use this naming conventions while referring to images in the Kubernetes manifests.
 
-Place all the Kubernetes manifests under the [`manifests/`](manifests) directory.
+Place all the Kubernetes manifests under the [`manifests/`](manifests) directory. Utilize your github username for namespaces.
