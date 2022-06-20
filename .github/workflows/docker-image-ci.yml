@@ -1,0 +1,103 @@
+name: Docker Image CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  prebuild-files:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.matrix.outputs.value }}
+    steps:
+      - uses: actions/checkout@v3
+      - id: matrix
+        run: |
+          echo ::set-output name=value::$(ls Dockerfile Dockerfile.* 2>/dev/null | sed -r 's/Dockerfile\.?//g' | jq -R -s -c 'split("\n")[:-1]')
+
+  build-file:
+    needs: prebuild-files
+    if: needs.prebuild-files.outputs.matrix != '[]'
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        value: ${{fromJson(needs.prebuild-files.outputs.matrix)}}
+    steps:
+      - uses: actions/checkout@v3
+      - run: |
+          echo step input: "${{ matrix.value }}"
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v3
+        with:
+          images: |
+            ghcr.io/${{ github.repository }}
+          tags: |
+            type=ref,event=branch
+          flavor: |
+            latest=true
+            suffix=${{ matrix.value != '' && format('-{0}', matrix.value) || '' }},onlatest=true
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build and push
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          file: ${{ matrix.value == '' && 'Dockerfile' || format('Dockerfile.{0}', matrix.value) }}
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+  prebuild-modules:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.matrix.outputs.value }}
+    steps:
+      - uses: actions/checkout@v3
+      - id: matrix
+        run: |
+          echo ::set-output name=value::$(ls **/Dockerfile 2>/dev/null | grep -v '^Dockerfile$' | sed -r 's/\/Dockerfile//g' | jq -R -s -c 'split("\n")[:-1]')
+
+  build-module:
+    needs: prebuild-modules
+    if: needs.prebuild-modules.outputs.matrix != '[]'
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        value: ${{fromJson(needs.prebuild-modules.outputs.matrix)}}
+    steps:
+      - uses: actions/checkout@v3
+      - run: |
+          echo step input: "${{ matrix.value }}"
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v3
+        with:
+          images: |
+            ghcr.io/${{ github.repository }}
+          tags: |
+            type=ref,event=branch
+          flavor: |
+            latest=true
+            prefix=${{ matrix.value != '' && format('{0}-', matrix.value) || '' }},onlatest=true
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build and push
+        uses: docker/build-push-action@v3
+        with:
+          context: ${{ format('./{0}/', matrix.value) }}
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
