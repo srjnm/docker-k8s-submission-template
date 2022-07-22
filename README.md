@@ -12,14 +12,8 @@ This is set up in a way to utilize Github Actions for [CI to build and push](.gi
 
 ## Naming Conventions
 
-The container repository base will be `ghcr.io/<username>/<reponame>`.
+The container repository base will be `ghcr.io/<username>/<reponame>`. The tags will be the branch name. The main branch will also get the `latest` tag.
 
-The tag conventions are as follows:
-
-- [`Dockerfile`](Dockerfile) will be built and pushed with `latest` and `<branchname>` tags
-- [`Dockerfile.service`](Dockerfile.service) will be built and pushed with `latest-<service>` and `<branchname>-<service>` tags
-- [`module/Dockerfile`](module/Dockerfile) will be built and pushed with `<module>-latest` and `<module>-<branchname>` tags
-
-Use this naming conventions while referring to images in the Kubernetes manifests.
+Use this naming convention while referring to images in the Kubernetes manifests.
 
 Place all the Kubernetes manifests under the [`manifests/`](manifests) directory. Utilize your github username for namespaces.
