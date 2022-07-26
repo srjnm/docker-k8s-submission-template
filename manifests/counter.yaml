@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: counter-deployment
+  namespace: srjnm
+  labels:
+    component: counter
+spec:
+  selector:
+    matchLabels:
+      app: counter
+  template:
+    metadata:
+      labels:
+        app: counter
+    spec:
+      containers:
+      - name: counter
+        image: ghcr.io/adyanth/docker-k8s-final-assessment:counter-latest
+        ports:
+        - containerPort: 8080
+        env:
+        - name: SERVE_PATH
+          value: "count"
+        - name: FILENAME
+          value: "dmp.txt"
+        - name: PART_OF
+          valueFrom:
+            configMapKeyRef:
+              name: config
+              key: part-of
+        - name: IDENTITY
+          valueFrom:
+            secretKeyRef:
+              name: secret
+              key: identity  
+
+          
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: service-counter
+  namespace: srjnm
+  labels:
+    component: counter
+spec:
+  selector:
+    app: counter
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
