@@ -21,6 +21,7 @@ func main() {
 
 	server.GET("/", apiHandler.RootHandler)
 	server.GET("/cc", apiHandler.CCGetHandler)
+	server.POST("/cc", apiHandler.CCPostHandler)
 
 	server.Run(":" + port)
 }
