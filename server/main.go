@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/gin-gonic/gin"
@@ -9,10 +10,14 @@ import (
 )
 
 func main() {
+	gin.SetMode(gin.ReleaseMode)
+
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"
 	}
+
+	fmt.Println("API-Server running on port " + port)
 
 	server := gin.Default()
 

@@ -3,7 +3,6 @@ package controllers
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"net/http"
 	"os"
 
@@ -37,8 +36,6 @@ func (c *apiController) CCPost(cxt *gin.Context) (int, *http.Response, error) {
 	if err != nil {
 		return http.StatusBadRequest, nil, err
 	}
-
-	fmt.Print(body)
 
 	if json.Unmarshal(body, &jsonData) != nil {
 		return http.StatusBadRequest, nil, errors.New("invalid json!")
